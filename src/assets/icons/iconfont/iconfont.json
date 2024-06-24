@@ -1,0 +1,37 @@
+{
+  "id": "4597538",
+  "name": "gpt_bot",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "14489917",
+      "name": "我的",
+      "font_class": "wode",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "34030220",
+      "name": "我的-copy",
+      "font_class": "wode1",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "37636067",
+      "name": "主页01-F",
+      "font_class": "zhuye01-F",
+      "unicode": "e63b",
+      "unicode_decimal": 58939
+    },
+    {
+      "icon_id": "37636071",
+      "name": "主页01-L",
+      "font_class": "zhuye01-L",
+      "unicode": "e63c",
+      "unicode_decimal": 58940
+    }
+  ]
+}

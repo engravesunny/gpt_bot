@@ -1,7 +1,11 @@
 <template>
-  <div>机器人</div>
+  <div>{{ route.query }}</div>
 </template>
 
-<script setup></script>
+<script setup>
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+</script>
 
 <style lang="less" scoped></style>
