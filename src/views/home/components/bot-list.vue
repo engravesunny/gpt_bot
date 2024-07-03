@@ -1,7 +1,7 @@
 <template>
   <div class="bot-list">
     <div class="bots">
-      <bot
+      <Bot
         v-for="bot in BotList"
         :key="bot.value"
         :avatar="bot.avatar"
@@ -14,7 +14,7 @@
 
 <script setup>
 import { BotList } from "@/configs";
-import bot from "./bot.vue";
+import Bot from "./bot.vue";
 </script>
 
 <style lang="less" scoped></style>

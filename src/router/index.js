@@ -1,4 +1,5 @@
-import { createWebHashHistory, createRouter } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
+
 const routes = [
   {
     path: "/",
@@ -35,9 +36,19 @@ const routes = [
     component: () => import("@/views/bot/index.vue"),
   },
   {
+    path: "/chat",
+    name: "chat",
+    component: () => import("@/views/chat/index.vue"),
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("@/views/login/index.vue"),
+  },
+  {
+    path: "/info",
+    name: "info",
+    component: () => import("@/views/info/index.vue"),
   },
 ];
 

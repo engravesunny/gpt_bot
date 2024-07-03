@@ -30,3 +30,61 @@ export const BotList = [
     avatar: "https://www.kecat.top/other/be67cd76448998063a1c022dca53a51d.jpg",
   },
 ];
+export const OtherList = [
+  {
+    label: "校园PPT助手",
+    value: "ppt_bot",
+    dsp: "校园PPT助手帮你制作优质PPT",
+    avatar:
+      "https://img.51miz.com/Element/00/85/41/53/2d2fede7_E854153_465ed382.png",
+  },
+  {
+    label: "文档解析助手",
+    value: "doc_bot",
+    dsp: "文档解析助手支持解析概要各种文档",
+    avatar:
+      "https://img.tukuppt.com/png_preview/00/24/33/dx9dFEnPkQ.jpg!/fw/780",
+  },
+];
+export const mainList = () => [
+  {
+    tag: "电话",
+    value: "18852182238",
+    key: "phone",
+  },
+  {
+    tag: "姓名",
+    value: "迟占斌",
+    key: "name",
+  },
+  {
+    tag: "职业",
+    value: "学生",
+    key: "job",
+  },
+  {
+    tag: "学校",
+    value: "学生",
+    key: "school",
+  },
+  {
+    tag: "年级",
+    value: "学生",
+    key: "grade",
+  },
+  {
+    tag: "专业",
+    value: "学生",
+    key: "lesson",
+  },
+  {
+    tag: "性别",
+    value: "学生",
+    key: "sex",
+  },
+  {
+    tag: "年龄",
+    value: "22岁",
+    key: "year",
+  },
+];

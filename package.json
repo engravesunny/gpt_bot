@@ -9,14 +9,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.7.2",
+    "element-plus": "^2.7.6",
     "path": "^0.12.7",
     "pinia": "^2.1.7",
+    "uuid": "^10.0.0",
+    "v-click-outside": "^3.2.0",
     "vue": "^3.4.29",
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
+    "eslint": "^9.5.0",
     "less": "^4.2.0",
+    "prettier": "^3.3.2",
     "vite": "^5.3.1"
   }
 }

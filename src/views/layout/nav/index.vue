@@ -3,10 +3,10 @@
     <div v-if="isHome" class="home">
       <div class="tags">
         <div
-          class="tag"
           v-for="tag in HomeTags"
           :key="tag.path"
           :class="{ active: curHomePage === tag.value }"
+          class="tag"
           @click="handleHomeJumpTo(tag.path, tag.value)"
         >
           {{ tag.label }}
@@ -21,9 +21,12 @@
 import { HomeTags } from "@/configs";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
 const route = useRoute();
 const router = useRouter();
-const curHomePage = ref("home_bot");
+const curHomePage = ref(
+  route.path.includes("/home/bot") ? "home_bot" : "home_other",
+);
 const isHome = computed(() => {
   return route.path.includes("/home");
 });
@@ -42,6 +45,7 @@ const handleHomeJumpTo = (path, value) => {
     transform: translate(-50%) scaleX(1);
   }
 }
+
 .nav {
   height: 45px;
   position: absolute;
@@ -49,16 +53,19 @@ const handleHomeJumpTo = (path, value) => {
   left: 0;
   right: 0;
   box-shadow: 0 1px 3px 0px rgba(0, 0, 0, 0.1);
+
   .home {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+
     .tags {
       display: flex;
       align-items: center;
       gap: 40px;
+
       .tag {
         min-width: 40px;
         display: flex;
@@ -67,12 +74,14 @@ const handleHomeJumpTo = (path, value) => {
         font-weight: normal;
         color: rgb(90, 97, 112);
       }
+
       .active {
         position: relative;
         font-size: 20px;
         transition: all 0.15s ease-in;
         font-weight: 700;
         color: #333;
+
         &::after {
           content: "";
           position: absolute;
@@ -88,6 +97,7 @@ const handleHomeJumpTo = (path, value) => {
       }
     }
   }
+
   .user {
     display: flex;
     justify-content: center;
