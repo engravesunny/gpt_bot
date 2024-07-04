@@ -116,7 +116,7 @@ import { apiUserInfo, login, register } from "@/service/user";
 import { userStore } from "@/store/user";
 import { ElMessage } from "element-plus";
 
-const { updateToken, updateUserInfo } = userStore();
+const { updateToken, updateUserInfo, updatePhone } = userStore();
 const router = useRouter();
 const loginType = ref("password");
 const codeSended = ref(false);
@@ -151,14 +151,16 @@ const handleLogin = async () => {
       ElMessage.error("两次填写密码不一致！");
       return;
     }
-    updateUserInfo({
-      phone: loginFormData.value.phone,
-    });
     const token = await register({
       role: 0,
       ...loginFormData.value,
     });
     updateToken(token);
+    updatePhone(loginFormData.value.phone);
+    const userInfo = await apiUserInfo({
+      phone: loginFormData.value.phone,
+    });
+    updateUserInfo(userInfo);
     await router.push("/info");
   } else if (loginType.value === LoginType.Password) {
     // 登录
@@ -170,6 +172,7 @@ const handleLogin = async () => {
       ...loginFormData.value,
     });
     updateToken(token);
+    updatePhone(loginFormData.value.phone);
     const userInfo = await apiUserInfo({
       phone: loginFormData.value.phone,
     });
@@ -180,11 +183,12 @@ const handleLogin = async () => {
 const handleChangePassword = () => {
   console.log(forgetFormData.value);
 };
+const timer = ref(null);
 const handleSendCode = () => {
   if (codeSended.value) return;
   // TODO 调用接口
   codeSended.value = true;
-  const timer = setInterval(() => {
+  timer.value = setInterval(() => {
     codeSecond.value = codeSecond.value - 1;
     if (codeSecond.value === 0) {
       codeSended.value = false;

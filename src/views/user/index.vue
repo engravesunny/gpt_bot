@@ -5,15 +5,19 @@
         <img alt="头像" src="https://www.kecat.top/other/logo.png" />
       </div>
       <div class="name">
-        {{ userInfo?.phone ? "你好呀" + userInfo?.name : "点我登录" }}
+        {{ userInfo?.phone ? "你好呀，" + userInfo?.username : "点我登录" }}
       </div>
     </div>
     <div class="main">
       <div v-for="item in list" :key="item.tag" class="main-item">
         <div class="tag">{{ item.tag }}</div>
-        <div class="value">{{ userInfo?.[item.key] }}</div>
+        <div class="value" v-if="item.key !== 'gender'">{{ userInfo?.[item.key] }}</div>
+        <div class="value" v-if="item.key === 'gender'">{{ userInfo?.[item.key] === 1 ? '女': '男' }}</div>
         <div class="right iconfont" @click="handleChangeInfo">&#xe61e;</div>
       </div>
+    </div>
+    <div class="bottom" @click="handleLogout">
+      <button>退出登录</button>
     </div>
   </div>
 </template>
@@ -22,15 +26,23 @@
 import { useRouter } from "vue-router";
 import { mainList } from "@/configs/index.js";
 import { userStore } from "@/store/user.js";
+import { ElMessage } from "element-plus";
 
 const list = mainList();
-const { userInfo, token } = userStore();
+const { userInfo, token, updatePhone, updateToken, updateUserInfo } = userStore();
 const router = useRouter();
 
 const handleLogin = () => {
   if (token.value) return;
   router.push("/login");
 };
+const handleLogout = () => {
+  updatePhone('');
+  updateToken('');
+  updateUserInfo('remove');
+  router.push('/login');
+  ElMessage.success('退出登录成功')
+}
 const handleChangeInfo = () => {
   router.push({
     path: "/info",
@@ -45,6 +57,9 @@ const handleChangeInfo = () => {
 .user {
   width: 100%;
   height: 100%;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
   padding: 0 20px;
 
@@ -86,7 +101,8 @@ const handleChangeInfo = () => {
     box-sizing: border-box;
     padding: 10px 5px;
     overflow-y: scroll;
-    max-height: 400px;
+    height: calc(100vh - 300px);
+    box-sizing: border-box;
 
     .main-item {
       display: flex;
@@ -117,6 +133,31 @@ const handleChangeInfo = () => {
       .right {
         transform: rotate(180deg);
         transform-origin: center;
+      }
+    }
+  }
+
+  .bottom {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    button {
+      display: flex;
+      width: 100%;
+      height: 50px;
+      border: none;
+      background-color: #e65353;
+      color: #fff;
+      justify-content: center;
+      align-items: center;
+      font-size: large;
+      border-radius: 5px;
+      &:active {
+        background-color: #e6535390;
       }
     }
   }

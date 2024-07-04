@@ -5,7 +5,7 @@ import { userStore } from "@/store/user.js";
 const { token } = userStore();
 //创建axios实例
 const service = axios.create({
-  baseURL: "http://localhost:8888/v3/api-docs/default",
+  baseURL: "http://kecat.top:8888",
   headers: {
     //编译语言
     "Content-type": "application/json;charset=utf-8",
@@ -13,15 +13,12 @@ const service = axios.create({
 });
 //请求拦截
 //就是你请求接口的时候，我会先拦截下来，对你的数据做一个判断，或者携带个token给你
+const noAuthUrl = ['/login', '/register'];
 service.interceptors.request.use(
   (config) => {
     //请求的数据
     config.headers = config.headers || {}; // 没有数据的话就设置为空设置为数据
-    config.headers.Authorization = `Bearer ${token.value}`;
-    if (localStorage.getItem("token")) {
-      //先确保登录
-      config.headers.Authorization = localStorage.getItem("token") || "";
-    }
+    noAuthUrl.every((item) => !config?.url?.includes(item)) && token.value && (config.headers.Authorization = `Bearer ${token.value}`);
     if (config.url.includes("v-dlg")) {
       config.headers["Content-Type"] = "multipart/form-data";
     }
@@ -34,14 +31,15 @@ service.interceptors.request.use(
 );
 //响应拦截：后端返回来的结果
 service.interceptors.response.use(
-  (res) => {
-    const code = res.data.code; //code是后端的状态码
-    if (code !== 0) {
+  (config) => {
+    const res = config.data || {}; //res是后端返回的数据
+    const { code, msg, message } = res; //code是后端的状态码
+    if (code !== 200) {
       //请求失败（包括token失效，302，404...根据和后端约定好的状态码做出不同的处理）
-      return Promise.reject(res);
+      ElMessage.error(msg || message);
+      return Promise.resolve('');
     } else {
       //请求成功
-      console.log(res, "成功----");
       return Promise.resolve(res.data);
     }
   },

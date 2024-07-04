@@ -29,8 +29,6 @@ export const BotList = [
     dsp: "英语交流助手可以和你进行通畅的英文交流，支持一对一语音聊天",
     avatar: "https://www.kecat.top/other/be67cd76448998063a1c022dca53a51d.jpg",
   },
-];
-export const OtherList = [
   {
     label: "校园PPT助手",
     value: "ppt_bot",
@@ -46,6 +44,7 @@ export const OtherList = [
       "https://img.tukuppt.com/png_preview/00/24/33/dx9dFEnPkQ.jpg!/fw/780",
   },
 ];
+export const OtherList = [];
 export const mainList = () => [
   {
     tag: "电话",
@@ -55,17 +54,22 @@ export const mainList = () => [
   {
     tag: "姓名",
     value: "迟占斌",
-    key: "name",
+    key: "username",
   },
   {
-    tag: "职业",
+    tag: "性别",
     value: "学生",
-    key: "job",
+    key: "gender",
+  },
+  {
+    tag: "年龄",
+    value: "22岁",
+    key: "age",
   },
   {
     tag: "学校",
     value: "学生",
-    key: "school",
+    key: "academy",
   },
   {
     tag: "年级",
@@ -75,16 +79,11 @@ export const mainList = () => [
   {
     tag: "专业",
     value: "学生",
-    key: "lesson",
+    key: "major",
   },
   {
-    tag: "性别",
-    value: "学生",
-    key: "sex",
-  },
-  {
-    tag: "年龄",
-    value: "22岁",
-    key: "year",
+    tag: "邮箱",
+    value: "student@kecat.top",
+    key: "email",
   },
 ];

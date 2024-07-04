@@ -10,11 +10,15 @@
       <div v-for="item in infoList" :key="item.tag" class="main-item">
         <div class="tag">{{ item.tag }}</div>
         <el-input
-          v-if="item.key !== 'phone'"
+          v-if="item.key !== 'phone'&&item.key !== 'gender'"
           v-model="item[item.key]"
           type="text"
         />
-        <div v-else class="value">{{ user?.phone }}</div>
+        <el-select placeholder="请选择" v-if="item.key === 'gender'" v-model="item[item.key]">
+          <el-option :key="0" :value="0" label="男" />
+          <el-option :key="1" :value="1" label="女" />
+        </el-select>
+        <div v-if="item.key === 'phone'" class="value">{{ user?.phone }}</div>
       </div>
     </div>
     <div class="footer">
@@ -25,7 +29,7 @@
   </div>
 </template>
 <script setup>
-import { ElButton, ElInput, ElMessage } from "element-plus";
+import { ElButton, ElInput, ElMessage, ElSelect, ElOption } from "element-plus";
 import { mainList } from "@/configs/index.js";
 import { onMounted, ref } from "vue";
 import { updateUserInfo } from "@/service/user.js";
@@ -58,7 +62,11 @@ const start = async () => {
   userInfo.phone = user.value.phone;
   try {
     updateUserStoreInfo(userInfo);
-    await updateUserInfo(userInfo);
+    await updateUserInfo({
+      id: user.value.id,
+      ...userInfo,
+      age: +userInfo.age,
+    });
   } catch (err) {
     console.log(err);
   }

@@ -6,7 +6,7 @@ const api = {
   login: `${baseUser}login`,
   logout: `${baseUser}logout`,
   register: `${baseUser}register`,
-  info: `${baseStu}info`,
+  info: `${baseUser}info`,
 };
 /**
  * 登录
