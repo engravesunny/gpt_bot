@@ -108,7 +108,7 @@ export const useChatting = () => {
 
   // 处理机器人音频播放
   const handlePlayBotAudio = () => {
-    botAudio.value = new Audio(botAudioUrl.value);
+    botAudio.value = new Audio("data:audio/x-wav;base64," + botAudioUrl.value);
     botAudio.value.play();
     botAudio.value.style.transform = "scale(0)";
     document.documentElement.appendChild(botAudio.value);
@@ -180,8 +180,13 @@ export const useChatting = () => {
         file: recordBlob.value,
       });
       botChatText.value = chatInfo.text ? chatInfo.text : "";
-      chatInfo.stream &&
-        (botAudioUrl.value = URL.createObjectURL(chatInfo.stream));
+      chatInfo.audioBase64 &&
+        (botAudioUrl.value = chatInfo.audioBase64);
+      if(!chatInfo) {
+        chattingStatus.value = ChatStatus.Ready;
+        cancelChatting();
+        return;
+      }
     } catch (e) {
       console.log(e);
     }

@@ -29,13 +29,13 @@ export const BotList = [
     dsp: "英语交流助手可以和你进行通畅的英文交流，支持一对一语音聊天",
     avatar: "https://www.kecat.top/other/be67cd76448998063a1c022dca53a51d.jpg",
   },
-  {
-    label: "校园PPT助手",
-    value: "ppt_bot",
-    dsp: "校园PPT助手帮你制作优质PPT",
-    avatar:
-      "https://img.51miz.com/Element/00/85/41/53/2d2fede7_E854153_465ed382.png",
-  },
+  // {
+  //   label: "校园PPT助手",
+  //   value: "ppt_bot",
+  //   dsp: "校园PPT助手帮你制作优质PPT",
+  //   avatar:
+  //     "https://img.51miz.com/Element/00/85/41/53/2d2fede7_E854153_465ed382.png",
+  // },
   {
     label: "文档解析助手",
     value: "doc_bot",

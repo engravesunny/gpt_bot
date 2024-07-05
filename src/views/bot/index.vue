@@ -9,16 +9,20 @@
         <div class="name">{{ route.query.name }}</div>
         <div class="dsp">{{ route.query.dsp }}</div>
       </div>
-      <div class="add" @click="handleAddNewChat">&#xe6cd;</div>
+      <div class="add" @click="handleAddNewChat" v-if="!isDocAnalyse">
+        &#xe6cd;
+      </div>
       <div class="clear" @click="clearHistory(route.query.name)">&#xe602;</div>
     </div>
     <div ref="chatBoayRef" class="chat-body">
       <MessageItem
-        v-for="messageItem in history"
-        :key="messageItem.id"
-        :content="messageItem.content"
+        v-for="messageItem in history?.[historyKey] || []"
+        :key="messageItem?.id"
+        :content="messageItem?.content"
         :isNew="messageItem?.isNew"
-        :role="messageItem.role"
+        :role="messageItem?.role"
+        :type="messageItem?.type"
+        :status="messageItem?.status"
       />
     </div>
     <div
@@ -45,24 +49,40 @@
             v-model="inputMessage"
             placeholder="点我问问题"
           />
-          <div class="mic" @click="handleJumpToChat">&#xe687;</div>
+          <div class="mic" @click="handleJumpToChat" v-if="!isDocAnalyse">
+            &#xe687;
+          </div>
           <div class="more" @click="handleShowMoreBox">&#xe6c8;</div>
           <button v-if="showSendBtn || inputMessage" @click="handleSendMessage">
             {{ loading ? "loading" : "发送" }}
           </button>
         </div>
       </div>
-      <div class="dsp">内容有讯飞AI生成</div>
+      <div class="dsp">内容由讯飞AI生成</div>
       <div v-if="showMoreBox" class="more-box">
-        <input @change="handleFileChange" ref="fileInputRef" type="file" name="file" id="1">
-        <el-button @click="handleUploadFile">上传文件测试</el-button>
+        <input
+          @change="handleFileChange"
+          ref="fileInputRef"
+          type="file"
+          name="file"
+          id="1"
+        />
+        <div class="more-box-btn" v-if="isDocAnalyse">
+          <el-button @click="handleUploadFile" class="more-btn">
+            <div class="box-inner">
+              <div class="iconfont icon">&#xe621;</div>
+              <div class="text">文档解析</div>
+            </div>
+          </el-button>
+        </div>
+        <div class="other">敬请期待～</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ElButton } from 'element-plus'
+import { ElButton } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
 import MessageItem from "./components/message-item.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -71,7 +91,11 @@ import { chatHistoryStore } from "@/store/chat.js";
 import { userStore } from "@/store/user.js";
 import { addAiHistory, aiHistory, aiTDlg, delAiHistory } from "@/service/ai.js";
 import { ElMessage } from "element-plus";
+import { docStore } from "@/store/doc";
+import { launchDocSummary, queryFileStatus, uploadFile } from "@/service/doc";
 
+const route = useRoute();
+const router = useRouter();
 const showSendBtn = ref(false);
 const showMoreBox = ref(false);
 const inputMessage = ref("");
@@ -81,6 +105,19 @@ const inputRef = ref(null);
 const chatBoayRef = ref(null);
 const fileInputRef = ref(null);
 const { history, updateHistory, clearHistory } = chatHistoryStore();
+const { docIds, docStatus, docInfos, updateDocStore, clearDocHistory } =
+  docStore();
+// 文档解析助手标记
+const isDocAnalyse = computed(() => {
+  return route.query.value === "doc_bot";
+});
+const isEngHistory = computed(() => {
+  return route.query.value === "english_bot";
+});
+const historyKey = computed(() => {
+  if (isEngHistory.value) return "eng";
+  return isDocAnalyse.value ? "doc" : "chat";
+});
 const { userInfo } = userStore();
 
 const botPaddingBottom = computed(() => {
@@ -89,35 +126,44 @@ const botPaddingBottom = computed(() => {
   return "80px";
 });
 
-const handleAddNewChat = () => {
-  history.value.push({
+const handleAddNewChat = async () => {
+  history.value[historyKey.value].push({
     role: "bot",
     content: "你好啊，我是" + route.query.name,
     id: v4(),
     isNew: true,
   });
-  delAiHistory({
+  await delAiHistory({
     id: userInfo?.value?.id,
     sessionId: Date.now(),
+  });
+  await addAiHistory({
+    id: userInfo?.value?.id,
+    sessionId: Date.now(),
+    content: JSON.stringify(history.value || {}),
   });
   setTimeout(() => {
     chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
   });
 };
-
 const queryMessageList = async () => {
-  try {
-    history.value = [
+  if (history.value[historyKey.value].length === 0) {
+    history.value[historyKey.value] = [
       {
         role: "bot",
         content: "你好啊，我是" + route.query.name,
         id: v4(),
       },
     ];
+    if (isDocAnalyse.value) {
+      history.value[historyKey.value][0].content += "，先上传文档再进行对话";
+    }
+  }
+  try {
     let apiHis = await aiHistory({
       id: userInfo.value?.id,
     });
-    if (apiHis.length) {
+    if (apiHis && typeof apiHis === 'string') {
       history.value = apiHis;
     }
   } catch (error) {}
@@ -129,12 +175,12 @@ const handleSendMessage = async () => {
   if (inputMessage.value === "") {
     return ElMessage.info("请输入问题再发送哦～");
   }
-  history.value.push({
+  history.value[historyKey.value].push({
     role: "user",
     content: inputMessage.value,
     id: v4(),
   });
-  history.value.push({
+  history.value[historyKey.value].push({
     role: "bot",
     id: v4(),
     content: "loading...",
@@ -155,14 +201,14 @@ const handleSendMessage = async () => {
       sessionId: Date.now(),
       query: tempMessage,
     });
-    if (typeof message == "string") {
+    if (typeof message == "string" && message) {
       newBotMessage.content = message;
     }
   } catch (e) {
     console.log(e);
   }
-  history.value.pop();
-  history.value.push(newBotMessage);
+  history.value[historyKey.value].pop();
+  history.value[historyKey.value].push(newBotMessage);
   chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
   loading.value = false;
 };
@@ -194,12 +240,74 @@ const handleJumpToChat = () => {
 };
 const handleUploadFile = () => {
   fileInputRef.value.click();
-}
-const handleFileChange = (e) => {
-  console.log('[ e ;] >', e);
-  ElMessage.success(e?.target?.files?.[0]?.name);
-}
-
+};
+const handleFileChange = async (e) => {
+  const file = e?.target?.files?.[0];
+  const fileName = file?.name;
+  const messageUserInfo = {
+    role: "user",
+    content: fileName,
+    id: v4(),
+    type: "file",
+    status: "上传中...",
+  };
+  const messageBotInfo = {
+    role: "bot",
+    content: fileName,
+    id: v4(),
+    type: "file",
+    status: "解析中...",
+  };
+  history.value[historyKey.value].push(messageUserInfo);
+  try {
+    // 上传文档
+    const uploadFileRes = await uploadFile({
+      file,
+      id: userInfo.value?.id,
+    });
+    // 更新上传状态
+    messageUserInfo.status = "上传成功";
+    history.value[historyKey.value].pop();
+    history.value[historyKey.value].push(messageUserInfo);
+    // 存储文档id和其上传状态
+    const {
+      data: { fileId },
+    } = uploadFileRes;
+    messageBotInfo.id = fileId;
+    docIds.value.push(fileId);
+    docStatus.value.push({
+      fileId,
+      fileStatus: "解析中...",
+    });
+    // 发起轮训查询文档解析状态
+    const timer = setInterval(async () => {
+      const res = queryFileStatus([...docIds.value]);
+      const fileStatus = res.data.find(
+        (item) => item.fileId === fileId
+      ).fileStatus;
+      if (fileStatus === "某一状态") {
+        // 发起文档总结
+        const launchFileRes = await launchDocSummary({
+          fileId: uploadFileRes?.data?.fileId,
+        });
+        // 更新状态为解析完成
+        history.value[historyKey.value].forEach((item) => {
+          if (item.id === fileId) {
+            item.status = "解析完成";
+          }
+        });
+        clearInterval(timer);
+        timer = null;
+      }
+    }, 1000);
+    // 自动发起文档总结（或者再某一状态时，比如后端文件上传完成？）
+    console.log("[ uoloadFile ] >", uploadFileRes);
+    console.log("[ launchFileRes ] >", launchFileRes);
+  } catch (error) {
+    ElMessage.error(error);
+  }
+  history.value[historyKey.value].push(messageBotInfo);
+};
 
 onMounted(() => {
   queryMessageList();
@@ -209,20 +317,21 @@ onUnmounted(() => {
   document.removeEventListener("click", handleCLickOutside);
 });
 
-watch(history, () => {
+watch(
+  history,
+  () => {
     // history发生改变时，上传用户聊天记录
-    addAiHistory({
-    userId: userInfo?.value?.id,
-    sessionId: Date.now(),
-    content: JSON.stringify(history.value || []),
-  });
-}, {
-  deep: true,
-  immediate: true,
-})
-
-const route = useRoute();
-const router = useRouter();
+    // addAiHistory({
+    //   id: userInfo?.value?.id,
+    //   sessionId: Date.now(),
+    //   content: JSON.stringify(history.value || {}),
+    // });
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
 </script>
 
 <style lang="less" scoped>
@@ -401,14 +510,39 @@ const router = useRouter();
   .more-box {
     height: 200px;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     flex-direction: column;
     input {
       transform: scale(0);
       position: absolute;
+    }
+    .more-box-btn {
+      padding: 10px;
+      :deep(.el-button) {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .box-inner {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        .text {
+          font-size: 10px;
+        }
+        .icon {
+          font-size: 40px;
+        }
+      }
     }
   }
 }

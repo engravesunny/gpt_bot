@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
 import { userStore } from "@/store/user.js";
+import router from "@/router";
 
 const { token } = userStore();
 //创建axios实例
@@ -19,7 +20,7 @@ service.interceptors.request.use(
     //请求的数据
     config.headers = config.headers || {}; // 没有数据的话就设置为空设置为数据
     noAuthUrl.every((item) => !config?.url?.includes(item)) && token.value && (config.headers.Authorization = `Bearer ${token.value}`);
-    if (config.url.includes("v-dlg")) {
+    if (config.url.includes("v-dlg") || config.url.includes("upload")) {
       config.headers["Content-Type"] = "multipart/form-data";
     }
     return config; //必须返回出去，不然请求发不出去
@@ -35,6 +36,11 @@ service.interceptors.response.use(
     const res = config.data || {}; //res是后端返回的数据
     const { code, msg, message } = res; //code是后端的状态码
     if (code !== 200) {
+      if(code === 401) {
+        ElMessage.error('请登录')
+        router.push('/login');
+        return;
+      }
       //请求失败（包括token失效，302，404...根据和后端约定好的状态码做出不同的处理）
       ElMessage.error(msg || message);
       return Promise.resolve('');

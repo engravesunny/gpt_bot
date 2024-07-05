@@ -18,6 +18,7 @@ const props = defineProps({
   name: String,
   dsp: String,
   avatar: String,
+  value: String,
 });
 const router = useRouter();
 const handleJumpToBot = () => {

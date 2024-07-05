@@ -7,6 +7,7 @@
         :avatar="bot.avatar"
         :dsp="bot.dsp"
         :name="bot.label"
+        :value="bot.value"
       />
     </div>
   </div>

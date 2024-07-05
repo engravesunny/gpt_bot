@@ -17,7 +17,13 @@ export const aiVDlg = (payload) => {
   return service({
     method: "post",
     url: api["v-dlg"],
-    data: payload,
+    data: {
+      file: payload.file,
+    },
+    params: {
+      id: payload.dialogue.id,
+      sessionId: payload.dialogue.sessionId,
+    }
   });
 };
 /**

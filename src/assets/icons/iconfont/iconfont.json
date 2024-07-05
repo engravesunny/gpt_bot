@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "34649841",
+      "name": "文档",
+      "font_class": "wendang1",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "18267974",
+      "name": "文档",
+      "font_class": "wendang",
+      "unicode": "e99c",
+      "unicode_decimal": 59804
+    },
+    {
+      "icon_id": "4237181",
+      "name": "上传文件",
+      "font_class": "shangchuanwenjian",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
       "icon_id": "3814177",
       "name": "分类-叉号",
       "font_class": "fenlei-chahao",
