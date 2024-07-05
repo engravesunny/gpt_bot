@@ -61,17 +61,17 @@ const router = createRouter({
   history: createWebHashHistory(),
 });
 
-router.beforeEach((to, _from, next) => {
-  if(to.fullPath.includes('/login')) {
-    next();
-  } else {
-    if(!token.value) {
-      ElMessage.error('请先登录！！');
-      next('/login');
-    } else {
-      next();
-    }
-  }
-})
+// router.beforeEach((to, _from, next) => {
+//   if(to.fullPath.includes('/login')) {
+//     next();
+//   } else {
+//     if(!token.value) {
+//       ElMessage.error('请先登录！！');
+//       next('/login');
+//     } else {
+//       next();
+//     }
+//   }
+// })
 
 export default router;

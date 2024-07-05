@@ -53,19 +53,24 @@
         </div>
       </div>
       <div class="dsp">内容有讯飞AI生成</div>
-      <div v-if="showMoreBox" class="more-box">暂无内容</div>
+      <div v-if="showMoreBox" class="more-box">
+        <input @change="handleFileChange" ref="fileInputRef" type="file" name="file" id="1">
+        <el-button @click="handleUploadFile">上传文件测试</el-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ElButton } from 'element-plus'
 import { useRoute, useRouter } from "vue-router";
 import MessageItem from "./components/message-item.vue";
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { v4 } from "uuid";
 import { chatHistoryStore } from "@/store/chat.js";
 import { userStore } from "@/store/user.js";
-import { aiHistory, aiTDlg, delAiHistory } from "@/service/ai.js";
+import { addAiHistory, aiHistory, aiTDlg, delAiHistory } from "@/service/ai.js";
+import { ElMessage } from "element-plus";
 
 const showSendBtn = ref(false);
 const showMoreBox = ref(false);
@@ -74,6 +79,7 @@ const loading = ref(false);
 const textarea = ref(null);
 const inputRef = ref(null);
 const chatBoayRef = ref(null);
+const fileInputRef = ref(null);
 const { history, updateHistory, clearHistory } = chatHistoryStore();
 const { userInfo } = userStore();
 
@@ -94,27 +100,34 @@ const handleAddNewChat = () => {
     id: userInfo?.value?.id,
     sessionId: Date.now(),
   });
+  setTimeout(() => {
+    chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
+  });
 };
 
 const queryMessageList = async () => {
-  // TODO 请求messageList
-  history.value = [
-    {
-      role: "bot",
-      content: "你好啊，我是" + route.query.name,
-      id: v4(),
-    },
-  ];
-  let apiHis = await aiHistory({
-    id: userInfo.value?.id,
-  });
-  if (apiHis.length) {
-    history.value = apiHis;
-  }
+  try {
+    history.value = [
+      {
+        role: "bot",
+        content: "你好啊，我是" + route.query.name,
+        id: v4(),
+      },
+    ];
+    let apiHis = await aiHistory({
+      id: userInfo.value?.id,
+    });
+    if (apiHis.length) {
+      history.value = apiHis;
+    }
+  } catch (error) {}
 };
 const handleSendMessage = async () => {
-  if (loading.value || inputMessage.value === "") {
-    return;
+  if (loading.value) {
+    return ElMessage.info("loading～");
+  }
+  if (inputMessage.value === "") {
+    return ElMessage.info("请输入问题再发送哦～");
   }
   history.value.push({
     role: "user",
@@ -129,26 +142,27 @@ const handleSendMessage = async () => {
   loading.value = true;
   showSendBtn.value = false;
   chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
-  const mockMessage = {
+  const newBotMessage = {
     role: "bot",
-    content: "你好啊，我是" + route.query.name,
+    content: "你好啊，我是" + route.query.name + "遇到了一点问题",
     id: v4(),
   };
-  inputMessage.value = "";
   try {
+    const tempMessage = inputMessage.value;
+    inputMessage.value = "";
     const message = await aiTDlg({
-      id: userInfo?.id,
+      id: userInfo?.value?.id,
       sessionId: Date.now(),
-      query: inputMessage.value,
+      query: tempMessage,
     });
-    if (message instanceof String) {
-      mockMessage.content = message;
+    if (typeof message == "string") {
+      newBotMessage.content = message;
     }
   } catch (e) {
     console.log(e);
   }
   history.value.pop();
-  history.value.push(mockMessage);
+  history.value.push(newBotMessage);
   chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
   loading.value = false;
 };
@@ -178,6 +192,14 @@ const handleJumpToChat = () => {
     query: route.query,
   });
 };
+const handleUploadFile = () => {
+  fileInputRef.value.click();
+}
+const handleFileChange = (e) => {
+  console.log('[ e ;] >', e);
+  ElMessage.success(e?.target?.files?.[0]?.name);
+}
+
 
 onMounted(() => {
   queryMessageList();
@@ -186,6 +208,18 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener("click", handleCLickOutside);
 });
+
+watch(history, () => {
+    // history发生改变时，上传用户聊天记录
+    addAiHistory({
+    userId: userInfo?.value?.id,
+    sessionId: Date.now(),
+    content: JSON.stringify(history.value || []),
+  });
+}, {
+  deep: true,
+  immediate: true,
+})
 
 const route = useRoute();
 const router = useRouter();
@@ -370,6 +404,12 @@ const router = useRouter();
     display: flex;
     justify-content: center;
     align-items: center;
+    display: flex;
+    flex-direction: column;
+    input {
+      transform: scale(0);
+      position: absolute;
+    }
   }
 }
 </style>

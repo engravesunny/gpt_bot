@@ -1,12 +1,12 @@
 import service from "@/service/index.js";
 
-const baseUrl = "/edu-ai/ai-bot/chat-bot/";
+const baseUrl = "/edu-ai/ai/chat-bot/";
 const api = {
   "v-dlg": `${baseUrl}v-dlg`,
   dlg: `${baseUrl}dlg`,
   history: "/edu-ai/ai/interaction/session",
   storage: "/edu-ai/ai/interaction/session/storage",
-  delete: "/edu-ai/ai/interaction/session/storage",
+  delete: "/edu-ai/ai/interaction/session",
 };
 /**
  * ai语音对话
@@ -39,7 +39,7 @@ export const aiTDlg = (payload) => {
  */
 export const aiHistory = (payload) => {
   return service({
-    method: "post",
+    method: "get",
     url: api.history,
     params: payload,
   });
@@ -57,7 +57,7 @@ export const addAiHistory = (payload) => {
   });
 };
 /**
- * ai文本对话历史数据 添加
+ * ai文本对话历史数据 删除
  * @param {{id: string, sessionId: number, type?: 0 | 1 }} payload
  * @returns {Promise<*>}
  */
