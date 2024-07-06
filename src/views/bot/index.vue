@@ -12,7 +12,12 @@
       <div class="add" @click="handleAddNewChat" v-if="!isDocAnalyse">
         &#xe6cd;
       </div>
-      <div class="clear" @click="clearHistory(route.query.name)">&#xe602;</div>
+      <div
+        class="clear"
+        @click="clearHistory(route.query.name, isDocAnalyse, isEngHistory)"
+      >
+        &#xe602;
+      </div>
     </div>
     <div ref="chatBoayRef" class="chat-body">
       <MessageItem
@@ -191,9 +196,7 @@ const handleSendMessage = async () => {
       ElMessage.error("请先上传文档");
       return;
     }
-    if (
-      docStatus.value[docStatus.value.length - 1].fileStatus !== "解析完成"
-    ) {
+    if (docStatus.value[docStatus.value.length - 1].fileStatus !== "解析完成") {
       ElMessage.error("请等待解析完成");
       return;
     }
@@ -277,6 +280,7 @@ const handleUploadFile = () => {
   fileInputRef.value.click();
 };
 const handleFileChange = async (e) => {
+  showMoreBox.value = false;
   const file = e?.target?.files?.[0];
   const fileName = file?.name;
   const messageUserInfo = {
@@ -301,6 +305,13 @@ const handleFileChange = async (e) => {
       id: userInfo.value?.id,
     });
     // 存储文档id和其上传状态
+    if (!uploadFileRes) {
+      messageBotInfo.status = "上传失败，请重新上传";
+      history.value[historyKey.value].push(messageBotInfo);
+      fileInputRef?.value?.reset();
+      ElMessage.error("上传失败，请重新上传");
+      return;
+    }
     const { fileId } = uploadFileRes;
     messageBotInfo.id = fileId;
     docIds.value.push(fileId);
@@ -358,9 +369,9 @@ const handleFileChange = async (e) => {
         }
       }, 1000));
   } catch (error) {
-    messageBotInfo.status = '解析失败，请重新上传'
+    messageBotInfo.status = "上传失败，请重新上传";
     fileInputRef?.value?.reset();
-    ElMessage.error(error);
+    ElMessage.error("上传失败，请重新上传");
   }
   history.value[historyKey.value].push(messageBotInfo);
 };
