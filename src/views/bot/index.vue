@@ -75,7 +75,7 @@
             </div>
           </el-button>
         </div>
-        <div class="other">敬请期待～</div>
+        <div class="other" v-else>敬请期待～</div>
       </div>
     </div>
   </div>
@@ -92,7 +92,13 @@ import { userStore } from "@/store/user.js";
 import { addAiHistory, aiHistory, aiTDlg, delAiHistory } from "@/service/ai.js";
 import { ElMessage } from "element-plus";
 import { docStore } from "@/store/doc";
-import { launchDocSummary, queryFileStatus, uploadFile } from "@/service/doc";
+import {
+  apiDocChat,
+  launchDocSummary,
+  queryFileStatus,
+  uploadFile,
+} from "@/service/doc";
+import { FileStatus, FileStatusMeaning } from "@/constants";
 
 const route = useRoute();
 const router = useRouter();
@@ -133,15 +139,15 @@ const handleAddNewChat = async () => {
     id: v4(),
     isNew: true,
   });
-  await delAiHistory({
-    id: userInfo?.value?.id,
-    sessionId: Date.now(),
-  });
-  await addAiHistory({
-    id: userInfo?.value?.id,
-    sessionId: Date.now(),
-    content: JSON.stringify(history.value || {}),
-  });
+  // await delAiHistory({
+  //   id: userInfo?.value?.id,
+  //   sessionId: Date.now(),
+  // });
+  // await addAiHistory({
+  //   id: userInfo?.value?.id,
+  //   sessionId: Date.now(),
+  //   content: JSON.stringify(history.value || {}),
+  // });
   setTimeout(() => {
     chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
   });
@@ -160,13 +166,18 @@ const queryMessageList = async () => {
     }
   }
   try {
-    let apiHis = await aiHistory({
-      id: userInfo.value?.id,
-    });
-    if (apiHis && typeof apiHis === 'string') {
+    // await aiHistory({
+    //   id: userInfo.value?.id,
+    //   sessionIds: 1720270905759,
+    // });
+    let apiHis = {};
+    if (apiHis && typeof apiHis === "string") {
       history.value = apiHis;
     }
   } catch (error) {}
+  setTimeout(() => {
+    chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
+  });
 };
 const handleSendMessage = async () => {
   if (loading.value) {
@@ -174,6 +185,18 @@ const handleSendMessage = async () => {
   }
   if (inputMessage.value === "") {
     return ElMessage.info("请输入问题再发送哦～");
+  }
+  if (isDocAnalyse.value) {
+    if (!docIds.value.length) {
+      ElMessage.error("请先上传文档");
+      return;
+    }
+    if (
+      docStatus.value[docStatus.value.length - 1].fileStatus !== "解析完成"
+    ) {
+      ElMessage.error("请等待解析完成");
+      return;
+    }
   }
   history.value[historyKey.value].push({
     role: "user",
@@ -196,11 +219,21 @@ const handleSendMessage = async () => {
   try {
     const tempMessage = inputMessage.value;
     inputMessage.value = "";
-    const message = await aiTDlg({
-      id: userInfo?.value?.id,
-      sessionId: Date.now(),
-      query: tempMessage,
-    });
+    let message = "";
+    if (isDocAnalyse.value) {
+      message = await apiDocChat({
+        fileId: docIds.value[docIds.value.length - 1],
+        query: tempMessage,
+        sessionId: Date.now(),
+      });
+    } else {
+      message = await aiTDlg({
+        id: userInfo?.value?.id,
+        sessionId: Date.now(),
+        query: tempMessage,
+      });
+    }
+
     if (typeof message == "string" && message) {
       newBotMessage.content = message;
     }
@@ -209,7 +242,9 @@ const handleSendMessage = async () => {
   }
   history.value[historyKey.value].pop();
   history.value[historyKey.value].push(newBotMessage);
-  chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
+  setTimeout(() => {
+    chatBoayRef.value.scrollTop = chatBoayRef.value.scrollHeight;
+  });
   loading.value = false;
 };
 const handleShowMoreBox = () => {
@@ -265,45 +300,66 @@ const handleFileChange = async (e) => {
       file,
       id: userInfo.value?.id,
     });
-    // 更新上传状态
-    messageUserInfo.status = "上传成功";
-    history.value[historyKey.value].pop();
-    history.value[historyKey.value].push(messageUserInfo);
     // 存储文档id和其上传状态
-    const {
-      data: { fileId },
-    } = uploadFileRes;
+    const { fileId } = uploadFileRes;
     messageBotInfo.id = fileId;
     docIds.value.push(fileId);
     docStatus.value.push({
       fileId,
-      fileStatus: "解析中...",
+      fileStatus: FileStatusMeaning.ocring,
     });
+    console.log("[ docIds, docStatus ] >", docIds, docStatus);
+    // 更新上传状态
+    messageUserInfo.status = FileStatusMeaning.uploaded;
+    messageUserInfo.id = fileId;
+    history.value[historyKey.value].pop();
+    history.value[historyKey.value].push(messageUserInfo);
+
     // 发起轮训查询文档解析状态
-    const timer = setInterval(async () => {
-      const res = queryFileStatus([...docIds.value]);
-      const fileStatus = res.data.find(
-        (item) => item.fileId === fileId
-      ).fileStatus;
-      if (fileStatus === "某一状态") {
-        // 发起文档总结
-        const launchFileRes = await launchDocSummary({
-          fileId: uploadFileRes?.data?.fileId,
-        });
-        // 更新状态为解析完成
-        history.value[historyKey.value].forEach((item) => {
-          if (item.id === fileId) {
-            item.status = "解析完成";
+    let timer = null;
+    fileId &&
+      (timer = setInterval(async () => {
+        const res = await queryFileStatus([...docIds.value]);
+        const fileStatus = res.find(
+          (item) => item.fileId === fileId
+        ).fileStatus;
+        // 更新文档本地存储状态
+        docStatus.value.forEach((item) => {
+          if (item.fileId === fileId) {
+            item.fileStatus = FileStatusMeaning[fileStatus];
           }
         });
-        clearInterval(timer);
-        timer = null;
-      }
-    }, 1000);
-    // 自动发起文档总结（或者再某一状态时，比如后端文件上传完成？）
-    console.log("[ uoloadFile ] >", uploadFileRes);
-    console.log("[ launchFileRes ] >", launchFileRes);
+        console.log("[ {...docStatus.value} ] >", { ...docStatus.value });
+        // 更新消息记录文档状态
+        history.value[historyKey.value].forEach((item) => {
+          if (item.id === fileId) {
+            item.status = FileStatusMeaning[fileStatus];
+          }
+        });
+        // 解析完毕发起文档概要请求
+        if (fileStatus === FileStatus.VERTORED) {
+          // 发起文档总结
+          await launchDocSummary({
+            fileId,
+          });
+          // 更新状态为解析完成
+          history.value[historyKey.value].forEach((item) => {
+            if (item.id === fileId) {
+              item.status = "解析完成";
+            }
+          });
+          docStatus.value.forEach((item) => {
+            if (item.fileId === fileId) {
+              item.fileStatus = "解析完成";
+            }
+          });
+          clearInterval(timer);
+          timer = null;
+        }
+      }, 1000));
   } catch (error) {
+    messageBotInfo.status = '解析失败，请重新上传'
+    fileInputRef?.value?.reset();
     ElMessage.error(error);
   }
   history.value[historyKey.value].push(messageBotInfo);

@@ -17,3 +17,17 @@ export const DisplayChatText = {
   [ChatStatus.Thinking]: "等我想一下",
   [ChatStatus.Chatting]: "",
 };
+
+// 上传文件状态enum
+export const FileStatus = {
+  UPLOADED: 'uploaded',
+  OCRING: 'ocring',
+  VECTORING: 'vectoring',
+  VERTORED: 'vectored',
+}
+export const FileStatusMeaning = {
+  uploaded: '上传成功',
+  ocring: '文字识别中...',
+  vectoring: '文本处理中...',
+  vectored: '解析完毕',
+}

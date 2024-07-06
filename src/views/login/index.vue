@@ -24,7 +24,7 @@
           v-if="loginType === LoginType.Code"
           class="login-main-input-account"
         >
-          <input v-model="loginFormData.email" placeholder="邮箱" type="text" />
+          <input v-model="loginFormData.email" placeholder="邮箱（选填）" type="text" />
         </div>
         <div class="login-main-input-password">
           <input
@@ -100,9 +100,9 @@
       >
         还没注册？
       </div>
-      <div class="login-other-option" @click="handleForgetPassword">
+      <!-- <div class="login-other-option" @click="handleForgetPassword">
         忘记密码
-      </div>
+      </div> -->
     </div>
     <div class="login-back iconfont" @click="handleBack">&#xe61e;</div>
   </div>
@@ -155,6 +155,9 @@ const handleLogin = async () => {
       role: 0,
       ...loginFormData.value,
     });
+    if (typeof token !== "string" || !token) {
+      return;
+    }
     updateToken(token);
     updatePhone(loginFormData.value.phone);
     const userInfo = await apiUserInfo({
@@ -171,6 +174,9 @@ const handleLogin = async () => {
     const token = await login({
       ...loginFormData.value,
     });
+    if (typeof token !== "string" || !token) {
+      return;
+    }
     updateToken(token);
     updatePhone(loginFormData.value.phone);
     const userInfo = await apiUserInfo({

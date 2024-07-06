@@ -20,22 +20,10 @@ input {
 /* 取消链接高亮  */
 body,
 div,
-ul,
-li,
-ol,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 input,
 textarea,
 select,
 p,
-dl,
-dt,
-dd,
 a,
 img,
 button,
@@ -88,22 +76,10 @@ img {
 /* 初始化 */
 body,
 div,
-ul,
-li,
-ol,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 input,
 textarea,
 select,
 p,
-dl,
-dt,
-dd,
 a,
 img,
 button,
@@ -139,11 +115,6 @@ i {
   font-style: normal;
 }
 
-ul,
-li {
-  list-style-type: none;
-}
-
 strong {
   font-weight: normal;
 }
@@ -169,22 +140,6 @@ a {
 a:hover {
   text-decoration: none;
 }
-
-ul,
-ol {
-  list-style: none;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-size: 100%;
-  font-family: 'Microsoft YaHei';
-}
-
 img {
   border: none;
 }

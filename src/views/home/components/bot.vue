@@ -13,6 +13,7 @@
 </template>
 
 <script setup>
+import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 const props = defineProps({
   name: String,
@@ -22,6 +23,10 @@ const props = defineProps({
 });
 const router = useRouter();
 const handleJumpToBot = () => {
+  if(props.value === 'ppt_bot') {
+    ElMessage.info('敬请期待～')
+    return;
+  }
   router.push({
     path: "/bot",
     query: {

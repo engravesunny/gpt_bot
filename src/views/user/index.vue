@@ -5,7 +5,7 @@
         <img alt="头像" src="https://www.kecat.top/other/logo.png" />
       </div>
       <div class="name">
-        {{ userInfo?.phone ? "你好呀，" + userInfo?.username : "点我登录" }}
+        {{ userInfo?.phone ? "你好呀" + (userInfo?.username ? `，${userInfo?.username}`:'') : "点我登录" }}
       </div>
     </div>
     <div class="main">

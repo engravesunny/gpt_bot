@@ -7,10 +7,8 @@
         :avatar="bot.avatar"
         :dsp="bot.dsp"
         :name="bot.label"
+        :value="bot.value"
       />
-    </div>
-    <div class="empty">
-      敬请期待～
     </div>
   </div>
 </template>

@@ -24,9 +24,9 @@ import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
-const curHomePage = ref(
-  route.path.includes("/home/bot") ? "home_bot" : "home_other",
-);
+const curHomePage = computed(() => {
+  return route.path.includes("/home/bot") ? "home_bot" : "home_other"
+})
 const isHome = computed(() => {
   return route.path.includes("/home");
 });

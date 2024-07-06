@@ -6,9 +6,8 @@
       :style="{ float: isUser ? 'right' : 'left' }"
       class="message-container"
       v-if="type !== 'file'"
-    >
-      {{ content }}
-    </div>
+      v-html="contentHTML"
+    ></div>
     <div
       :class="{ bot: !isUser, user: isUser }"
       class="file-message"
@@ -59,8 +58,10 @@
         </svg>
       </div>
       <div class="right">
-        <div class="fileName">{{ content }}</div>
-        <div class="status">{{ status || '上传中...' }}</div>
+        <div class="fileName">
+          {{ content }}
+        </div>
+        <div class="status">{{ status || "上传中..." }}</div>
       </div>
     </div>
   </div>
@@ -73,11 +74,14 @@ const props = defineProps({
   content: String,
   isNew: Boolean,
   type: String,
-  status: String
+  status: String,
 });
 
 const isUser = computed(() => {
   return props.role === "user";
+});
+const contentHTML = computed(() => {
+  return marked.parse(props.content);
 });
 </script>
 

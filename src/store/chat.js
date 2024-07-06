@@ -1,6 +1,4 @@
 import { ref } from "vue";
-import { delAiHistory } from "@/service/ai.js";
-import { userStore } from "@/store/user.js";
 import { v4 } from "uuid";
 
 /**
@@ -11,7 +9,6 @@ const history = ref({
   doc: [],
   eng: [],
 });
-const { userInfo } = userStore();
 export const chatHistoryStore = () => {
   const updateHistory = (newVal) => {
     history.value = [...newVal];
@@ -20,10 +17,6 @@ export const chatHistoryStore = () => {
     history.value.push(newVal);
   };
   const clearHistory = async (name) => {
-    await delAiHistory({
-      id: userInfo.value?.id,
-      sessionId: Date.now(),
-    });
     history.value = [
       {
         role: "bot",
